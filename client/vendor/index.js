@@ -8,10 +8,12 @@ const socket = io('http://localhost:3001/caps');
 
 socket.on('connect', () => console.log('Vendor Link with Server: SUCCESSFUL'));
 
+socket.on('in-transit', (payload) => {
+    console.log(`${payload.vendor}, the order is in transit to ${payload.name}`);
+});
+
 socket.on('delivered', (payload) => {
-    console.log(`${payload.name}, your order was delivered`)
-    console.log(socket.leave);
-    // socket.leave(payload.vendor);
+    console.log(`${payload.name}, your order was delivered`);
 });
 
 setInterval(() => {

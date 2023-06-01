@@ -14,13 +14,11 @@ const caps = io.of('/caps');
 caps.on('connection', (socket) => {
 
   console.log('sockets connected to cap namespace', socket.id);
-  socket.emit('listen', 'LISTENER IS WORKING');
 
   socket.on('join-room', (room) =>{
     socket.join(room);
     console.log(socket.id);
     console.log('these are the rooms', socket.adapter.rooms);
-    // socket.to(room).emit('trigger', 'test'); // will emit to everyone but the receiver/socket
   });
 
   socket.on('pickup', (event, payload) => logger(event, payload, socket));
@@ -47,6 +45,7 @@ function logger(event, payload, socket) {
     console.log('ORDER IS PICKED UP!');
     break;
   case 'in-transit':
+    socket.to(payload.vendor).emit('in-transit', payload);
     console.log('ORDER IN TRANSIT');
     break;
   case 'delivered':
