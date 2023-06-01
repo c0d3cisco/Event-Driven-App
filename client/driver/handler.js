@@ -9,6 +9,7 @@ const handlePickup = (payload, socket) => {
 const handleDelivery = (payload, socket) => {
   console.log(`DRIVER: delivery to ${payload.name} complete`);
   socket.emit('delivered', 'delivered', payload);
+  socket.emit('leave-room', payload);
 };
 
 module.exports = { handleDelivery, handlePickup };

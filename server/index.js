@@ -27,6 +27,10 @@ caps.on('connection', (socket) => {
   socket.on('in-transit', (event, payload) => logger(event, payload, socket));
   socket.on('delivered', (event, payload) => logger(event, payload, socket));
 
+  socket.on('leave-room', (payload) => {
+    socket.leave(payload.vendor);
+    console.log(`${socket.id} left the room`);
+  });
 });
 
 io.listen(PORT);
@@ -53,7 +57,7 @@ function logger(event, payload, socket) {
   case 'delivered':
     socket.to(payload.vendor).emit('delivered', payload);
     // emitter of 'delivered'leaves room
-    socket.leave(payload.vendor);
+    // socket.leave(payload.vendor);
     console.log('DELIVERED');
     break;
   default:

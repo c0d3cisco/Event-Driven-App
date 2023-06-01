@@ -13,28 +13,12 @@ socket.on('in-transit', (payload) => {
 });
 
 socket.on('delivered', (payload) => {
-    // notified of complete delivery by CAP
     console.log(`${payload.name}, your order was delivered`);
-    // console.log('socket to unplug', socket.id);
-    // console.log('room to leave', payload.vendor);
-    // socket.leave(payload.vendor); // ! should disconnect but not working
+    socket.emit('leave-room', payload);
 });
 
 // * used to send single order
-setTimeout(() => {
-    let chance = new Chance();
-    let payload = {
-        vendor: chance.company(),
-        guid: chance.guid(),
-        name:chance.name(),
-        address: chance.address(),
-    };
-    handler(socket, payload);
-}, 1000);
-
-
-// * simulate multiple orders
-// setInterval(() => {
+// setTimeout(() => {
 //     let chance = new Chance();
 //     let payload = {
 //         vendor: chance.company(),
@@ -43,6 +27,19 @@ setTimeout(() => {
 //         address: chance.address(),
 //     };
 //     handler(socket, payload);
-// }, 5000);
+// }, 1000);
+
+
+// * simulate multiple orders
+setInterval(() => {
+    let chance = new Chance();
+    let payload = {
+        vendor: chance.company(),
+        guid: chance.guid(),
+        name:chance.name(),
+        address: chance.address(),
+    };
+    handler(socket, payload);
+}, 5000);
 
 
