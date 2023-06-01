@@ -1,6 +1,6 @@
 'use strict';
 
-const eventEmitter = require('../eventEmitter.js');
+const eventEmitter = require('../../eventEmitter.js');
 const handler = require('./handler.js');
 const Chance = require('chance');
 
@@ -12,7 +12,16 @@ jest.mock('../eventEmitter.js', () => {
     };
 });
 
-console.log = jest.fn();
+let consoleSpy;
+beforeAll(()=> {
+    consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+});
+
+afterAll(()=>{
+    consoleSpy.mockRestore();
+});
+
+
 
 describe('Vendor handler', () => {
     let chance = new Chance();
@@ -23,7 +32,7 @@ describe('Vendor handler', () => {
     };
     test('log Thank you Message', () => {
         handler(payload);
-        expect(console.log).toHaveBeenCalledWith(`Thank you for your order, ${payload.name}`);
+        expect(consoleSpy).toHaveBeenCalledWith(`Thank you for your order, ${payload.name}`);
     });
     test('test payload', ()=>{
         handler(payload);

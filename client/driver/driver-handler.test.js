@@ -11,7 +11,15 @@ jest.mock('../eventEmitter.js', () => {
   };
 });
 
-console.log = jest.fn();
+let consoleSpy;
+beforeAll(()=> {
+  consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+});
+
+afterAll(()=>{
+  consoleSpy.mockRestore();
+});
+
 
 describe('Driver delivery handler', () => {
   let chance = new Chance();
@@ -23,7 +31,7 @@ describe('Driver delivery handler', () => {
 
   test('log pickup message', () => {
     handlePickup(payload);
-    expect(console.log).toHaveBeenCalledWith(`DRIVER: picked-up<${payload.guid}>`);
+    expect(consoleSpy).toHaveBeenCalledWith(`DRIVER: picked-up<${payload.guid}>`);
   });
 
   test('emit in-transit event with correct params', () => {
@@ -33,7 +41,7 @@ describe('Driver delivery handler', () => {
 
   test('log delivery message', () => {
     handleDeliver(payload);
-    expect(console.log).toHaveBeenCalledWith(`DRIVER: delivered ${payload.guid}`);
+    expect(consoleSpy).toHaveBeenCalledWith(`DRIVER: delivered ${payload.guid}`);
   });
 
   test('emit delivered event with correct params', () => {

@@ -1,6 +1,6 @@
 'use strict';
 
-let eventEmitter = require('../eventEmitter');
+let eventEmitter = require('../../eventEmitter.js');
 
 const handlePickup = (payload) => {
   console.log(`DRIVER: picked-up<${payload.guid}>`);
