@@ -1,11 +1,11 @@
 'use strict';
 
-const eventEmitter = require('../../eventEmitter.js');
+const {socket} = require('../../socket-client-for-test-only.test.js');
 const handler = require('./handler.js');
 const Chance = require('chance');
 
 
-jest.mock('../eventEmitter.js', () => {
+jest.mock('../socket-client-for-test-only.test.js', () => {
     return {
         on: jest.fn(),
         emit: jest.fn(),
@@ -36,6 +36,6 @@ describe('Vendor handler', () => {
     });
     test('test payload', ()=>{
         handler(payload);
-        expect(eventEmitter.emit).toHaveBeenCalledWith('pickup',['pickup', payload]);
+        expect(socket.emit).toHaveBeenCalledWith('pickup',payload);
     });
 });

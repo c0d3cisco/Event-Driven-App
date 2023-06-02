@@ -19,7 +19,7 @@ socket.on('pickup', (payload) => {
   // handling deliver 2 seconds after pickup
   setTimeout(() => {
     handleDelivery(payload, socket);
-  }, 3500);
+  }, 7000);
 });
 
 socket.on('in-transit', (payload) => {
@@ -29,3 +29,22 @@ socket.on('in-transit', (payload) => {
 socket.on('delivered', (payload) => {
   console.log(`${payload.name}, your order was delivered INCORRECTLY`);
 });
+
+socket.on('MESSAGE', (payload) => {
+  setTimeout(() => {
+    console.log('Message received: ', payload);
+    // this is the signal to remove it from the list in the server
+    let payload1 = {
+      text: payload.text,
+      messageId: payload.messageId,
+      queueId: 'message',
+    };let payload2 = {
+      text: payload.text,
+      messageId: payload.messageId,
+      queueId: 'inTransit',
+    };
+    socket.emit('RECEIVED', [payload1, payload2]);
+  }, 1000);
+});
+
+socket.emit('GET-MESSAGES', {queueId: 'message'});
