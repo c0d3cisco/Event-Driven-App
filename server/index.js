@@ -18,11 +18,7 @@ caps.on('connection', (socket) => {
 
   console.log('sockets connected to cap namespace', socket.id);
 
-  socket.onAny((event,  payload) => {
-    !payload ?
-      loggerHandler(event, payload, socket)
-      : null;
-  });
+
 
   // socket that emits room will join room with specific room name
   socket.on('join-room', (room) =>{
@@ -37,22 +33,59 @@ caps.on('connection', (socket) => {
     console.log(`${socket.id} left the room`);
   });
 
-  socket.on('pickup', (payload) => handlerQueueLoading(payload, socket, messageQueue));
-  socket.on('RECEIVED', (payload) => handlerQueueLoading(payload[1], socket, messageQueue));  
-  socket.on('RECEIVED',(payload) => handlerDequeue(payload, socket, messageQueue));
+  socket.on('pickupNeeded', (payload) => {
+    handlerQueueLoading(payload, messageQueue);
+    loggerHandler('pickup', payload, socket);
+    socket.broadcast.emit('pickupAssigned',payload);
+  });
+
+  socket.on('in-transit', (payloadToRemoveFromQueue, payload) => {
+    handlerDequeue(payloadToRemoveFromQueue, messageQueue); // handle dequeue pickup messages
+    loggerHandler('in-transit', payload, socket);
+    handlerQueueLoading(payload, messageQueue);
+    socket.to(payload.channel).emit('in-transit', payload, `${payload.vendor}, the order is in transit to ${payload.name}`);
+    // handlerQueueLoading(payload, socket, messageQueue); // handle queue for transfer messages
+  }); 
+
+  socket.on('delivered', (payload) => {
+    // handlerDequeue(payload, messageQueue); // handle dequeue pickup messages
+    loggerHandler('delivered', payload, socket);
+    handlerQueueLoading(payload, messageQueue);
+    socket.to(payload.channel).emit('delivered', payload, `${payload.vendor}, the order is in transit to ${payload.name}`);
+    // handlerQueueLoading(payload, socket, messageQueue); // handle queue for transfer messages
+  }); 
+
+  socket.on('thankyou', (payload) => handlerDequeue(payload, messageQueue));
+
+  // socket.on('delivery',(payload) => handlerDequeue(payload, messageQueue));
 
   //TODO: step THREE. create an event called GET-MESSAGE, that the recipient can emit so that they can obtain any missed messaged 
-  socket.on('GET-MESSAGES', (payload) => {
+  socket.on('GET-MESSAGES-DRIVER', (payload) => {
     console.log('attempting to get messages');
     let currentQueue = messageQueue.read(payload.queueId);
     console.log(currentQueue);
-    if (currentQueue && currentQueue.data){
+    if(currentQueue?.data){
       Object.keys(currentQueue.data).forEach(messageId => {
         // sending saved messaged that were missed
         // maybe sending the correct room also
-        socket.emit('MESSAGE', currentQueue.read(messageId));
+        socket.emit('pickupAssigned', currentQueue.read(messageId));
       });
     }
+  });
+
+  socket.on('GET-MESSAGES-VENDOR', (payload) => {
+    console.log('attempting to get messages');
+    let currentQueue = messageQueue.read(payload.queueId);
+    console.log(currentQueue);
+    if(currentQueue?.data){
+      Object.keys(currentQueue.data).forEach(messageId => {
+        console.log('hello')
+        // sending saved messaged that were missed
+        // maybe sending the correct room also
+        socket.emit(payload.queueId, currentQueue.read(messageId));
+      });
+    }
+
   });
 
 });
@@ -61,6 +94,13 @@ process.stdin.on('data', data => {
   if(data.toString().slice(0, -1) === 'queue'){
     // console.log(messageQueue.data.size);
     console.log(messageQueue.data);
+  }
+});
+
+process.stdin.on('data', data => {
+  if(data.toString().slice(0, -1) === 'qall'){
+    // console.log(messageQueue.data.size);
+    console.log(messageQueue);
   }
 });
 
