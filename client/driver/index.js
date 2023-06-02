@@ -1,36 +1,32 @@
 'use strict';
 
-const eventEmitter = require('../../eventEmitter.js');
-const { handleDeliver, handlePickup } = require('./handler.js');
+const { handleDelivery, handlePickup } = require('./handler.js');
 
 const { io } = require('socket.io-client');
 const socket = io('http://localhost:3001/caps');
 
-// eventEmitter.on('pickup', (payload) => {
-// socket.on('trigger', (payload) => {
+socket.on('connect', () => console.log('Driver Link with Server: SUCCESSFUL'));
 
-//   // handlePickup(payload[1]);
-  
-//   setTimeout(() => {
-//     console.log('Notified of order!!', payload);
-//     // handleDeliver(payload[1]);
-//   }, 10);
+socket.on('pickupAssigned', (payload) => {
+  console.log('PICKUP NOTIFICATION');
 
-// });
-socket.on('pickup', (payload) => {
-
-  socket.emit('join-room', payload.vendor);
-  console.log('DRIVER GOT MESSAGE');
-
+  socket.emit('join-room', payload.channel);
 
   setTimeout(() => {
-    socket.emit('in-transit', 'in-transit', payload);
-  }, 1500);
+    handlePickup(payload, socket);
+  }, 2500);
+
   setTimeout(() => {
-    socket.emit('delivered', 'delivered', payload);
-  }, 3500);
+    handleDelivery(payload, socket);
+  }, 5000);
 });
-socket.on('trigger', (payload) => console.log('DRIVER: its working -', payload));
-socket.on('listen', (arg) => {
-  console.log(arg); // world
+
+socket.on('in-transit', (payload) => {
+  console.log(`${payload.vendor}, the order is in transit to ${payload.name} INCORRECTLY`);
 });
+
+socket.on('delivered', (payload) => {
+  console.log(`${payload.name}, your order was delivered INCORRECTLY`);
+});
+
+socket.emit('GET-MESSAGES-DRIVER', {queueId: 'pickupMessage'});

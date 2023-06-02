@@ -1,10 +1,10 @@
 'use strict';
 
-const eventEmitter = require('../eventEmitter.js');
+const eventEmitter = require('../../socket-client-for-test-only.test.js');
 const { handleDeliver, handlePickup } = require('./handler.js');
 const Chance = require('chance');
 
-jest.mock('../eventEmitter.js', () => {
+jest.mock('../socket-client-for-test-only.test.js', () => {
   return {
     on: jest.fn(),
     emit: jest.fn(),
